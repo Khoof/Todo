@@ -1,0 +1,20 @@
+# config/services.yaml
+parameters:
+
+services:
+    # Symfony default services (auto-generated)
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/*'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # ← ADD THIS BELOW (ONLY ONCE!)
+    App\Resolver\:
+        resource: '../src/Resolver/*'
+        tags: ['overblog_graphql.resolver']
