@@ -17,4 +17,6 @@ services:
         tags:
             - { name: overblog_graphql.resolver_map, schema: default }
 
-    
+    App\GraphQL\Middleware\AuthMiddleware:
+        tags:
+            - { name: overblog_graphql.resolver_middleware, priority: 100 }

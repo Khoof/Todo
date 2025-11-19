@@ -3,3 +3,12 @@ lexik_jwt_authentication:
     public_key: '%kernel.project_dir%/config/jwt/public.pem'
     pass_phrase: 'pass123'
     token_ttl: 3600
+
+    token_extractors:
+        authorization_header:
+            enabled: true
+            prefix: Bearer
+            name: Authorization
+
+    # This tells Lexik: "put the user identifier in a claim called 'email'"
+    user_id_claim: email

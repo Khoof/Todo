@@ -1,51 +1,27 @@
 <?php
+// src/Service/AuthService.php
 
 namespace App\Service;
 
 use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use App\Repository\UserRepository;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AuthService
 {
-    private $em;
-    private $passwordEncoder;
-    private $jwtManager;
-
     public function __construct(
-        EntityManagerInterface $em,
-        
-        UserPasswordEncoderInterface $passwordEncoder,
-        
-        JWTTokenManagerInterface $jwtManager
-        ) {
-            
-            $this->em = $em;
-            
-        $this->passwordEncoder = $passwordEncoder;
+        private UserRepository $userRepository,
+        private UserPasswordHasherInterface $passwordHasher
+    ) {}
 
-        $this->jwtManager = $jwtManager;
-
-    }
-    
-    public function login(string $email, string $password): array
+    public function login(string $email, string $password): ?User
     {
-        $user = $this->em->getRepository(User::class)->findOneBy(['email' => $email]);
-        
-        if (!$user) {
-            throw new \Exception('User not found');
+        $user = $this->userRepository->findOneBy(['email' => $email]);
+
+        if (!$user || !$this->passwordHasher->isPasswordValid($user, $password)) {
+            return null;
         }
-        
-        if (!$this->passwordEncoder->isPasswordValid($user, $password)) {
-            throw new \Exception('Invalid credentials');
-        }
-        
-        $token = $this->jwtManager->create($user);
-        
-        return [
-            'token' => $token,
-            'user' => $user,
-        ];
+
+        return $user;
     }
 }
