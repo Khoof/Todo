@@ -1,3 +1,6 @@
 type Query {
     me: User! @accessControl(expression: "isAuthenticated()")
+    getTodos: [Todo!]!
+    getTodoById(id: ID!): Todo
+    getTodos(completed: Boolean): [Todo!]!
 }

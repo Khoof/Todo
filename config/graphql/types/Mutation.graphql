@@ -7,8 +7,16 @@ type User {
     id: ID!
     email: String!
     username: String
+    name: String  # ← YE ADD KARO
 }
 
 type Mutation {
     login(email: String!, password: String!): AuthPayload!
+    
+    register(email: String!, password: String!, username: String!, name: String): AuthPayload!
+    
+    createTodo(title: String!, description: String!, completed: Boolean): Todo!
+    updateTodo(id: ID!, title: String, description: String, completed: Boolean): Todo!
+    deleteTodo(id: ID!): Boolean!
+    toggleTodoComplete(id: ID!): Todo!
 }

@@ -2,69 +2,56 @@
 
 namespace App\GraphQL\Resolver;
 
-use App\Service\AuthService;
+use App\Service\AuthResolverService;
+use App\Service\TodoQueryService;
+use App\Service\TodoMutationService;
 use Overblog\GraphQLBundle\Resolver\ResolverMap;
 use GraphQL\Type\Definition\ResolveInfo;
 use Overblog\GraphQLBundle\Definition\ArgumentInterface;
 use ArrayObject;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 class CustomResolverMap extends ResolverMap
 {
     public function __construct(
-        private AuthService $authService,
-        private JWTTokenManagerInterface $jwtManager,
-        private TokenStorageInterface $tokenStorage
-        ) {}
-        
-        protected function map(): array
-        {
-            return [
-                'Mutation' => [
-                    self::RESOLVE_FIELD => function ($value, ArgumentInterface $args, ArrayObject $context, ResolveInfo $info) {
-                        return match ($info->fieldName) {
-                            'login' => $this->handleLogin($args),
-                            default => null,
-                        };
-                    },
-                ],
-                
-                'Query' => [
-                    self::RESOLVE_FIELD => function ($value, ArgumentInterface $args, ArrayObject $context, ResolveInfo $info) {
-                        return match ($info->fieldName) {
-                            'me' => $this->getCurrentUser(),
-                            default => throw new \RuntimeException('Query not implemented yet'),
-                        };
-                    },
-                ],
-            ];
-        }
-        
-        private function handleLogin(ArgumentInterface $args): array
-        
+        private AuthResolverService $authResolverService,
+        private TodoQueryService $todoQueryService,
+        private TodoMutationService $todoMutationService
+    ) {}
+
+    // ← YEH PRIVATE HELPER BHI ADD KAR DO (DRY principle ke liye)
+    private function currentUser(): \App\Entity\User
     {
-        $user = $this->authService->login($args['email'], $args['password']);
-
-        if (!$user) {
-            throw new AuthenticationException('Invalid credentials, Password Dobara Check krlo,And Try again');
-        }
-
-        return [
-            'token' => $this->jwtManager->create($user),
-            'user'  => $user,
-        ];
+        return $this->authResolverService->getCurrentUser();
     }
 
-    private function getCurrentUser()
+    protected function map(): array
     {
-        $token = $this->tokenStorage->getToken();
+        return [
+            'Mutation' => [
+                self::RESOLVE_FIELD => function ($value, ArgumentInterface $args, ArrayObject $context, ResolveInfo $info) {
+                    return match ($info->fieldName) {
+                        'login'              => $this->authResolverService->handleLogin($args),
+                        'register'           => $this->authResolverService->register($args),
+                        'createTodo'         => $this->todoMutationService->createTodo($this->currentUser(), $args),
+                        'updateTodo'         => $this->todoMutationService->updateTodo($this->currentUser(), $args),
+                        'deleteTodo'         => $this->todoMutationService->deleteTodo($this->currentUser(), $args),
+                        'toggleTodoComplete'=> $this->todoMutationService->toggleTodoComplete($this->currentUser(), $args),
+                        default => null,
+                    };
+                },
+            ],
 
-        if (null === $token || !($user = $token->getUser()) instanceof \App\Entity\User) {
-            throw new AuthenticationException('Unauthenticated, Go Geet yourself a Token With Mutation, and Try again');
-        }
-
-        return $user;
+            'Query' => [
+                self::RESOLVE_FIELD => function ($value, ArgumentInterface $args, ArrayObject $context, ResolveInfo $info) {
+                    // ← YEH LINE FIX KI HAI: $context pehle, $info baad mein
+                    return match ($info->fieldName) {
+                        'me'          => $this->authResolverService->getCurrentUser(),
+                        'getTodos'    => $this->todoQueryService->getTodos($this->currentUser(), $args),
+                        'getTodoById' => $this->todoQueryService->getTodoById($this->currentUser(), $args),
+                        default       => throw new \RuntimeException('Query not implemented yet'),
+                    };
+                },
+            ],
+        ];
     }
 }
