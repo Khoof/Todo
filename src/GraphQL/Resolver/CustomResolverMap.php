@@ -30,12 +30,12 @@ class CustomResolverMap extends ResolverMap
             'Mutation' => [
                 self::RESOLVE_FIELD => function ($value, ArgumentInterface $args, ArrayObject $context, ResolveInfo $info) {
                     return match ($info->fieldName) {
-                        'login'              => $this->authResolverService->handleLogin($args),
-                        'register'           => $this->authResolverService->register($args),
-                        'createOrUpdateTodo'         => $this->todoMutationService->createOrUpdateTodo($this->currentUser(), $args),
-                        'deleteTodo'         => $this->todoMutationService->deleteTodo($this->currentUser(), $args),
-                        'toggleTodoComplete'=> $this->todoMutationService->toggleTodoComplete($this->currentUser(), $args),
-                        default => null,
+                        'login'               => $this->authResolverService->handleLogin($args),
+                        'register'            => $this->authResolverService->register($args),
+                        'createOrUpdateTodo'  => $this->todoMutationService->createOrUpdateTodo($this->currentUser(), $args),
+                        'deleteTodo'          => $this->todoMutationService->deleteTodo($this->currentUser(), $args),
+                        'toggleTodoComplete'  => $this->todoMutationService->toggleTodoComplete($this->currentUser(), $args),
+                         default              => null,
                     };
                 },
             ],
