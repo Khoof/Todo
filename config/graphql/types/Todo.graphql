@@ -1,7 +1,8 @@
 type Todo {
-  id: ID!
-  title: String!
-  description: String!
-  completed: Boolean!
-  user: User!
+    id: ID!
+    title: String!
+    description: String
+    completed: Boolean!
+    priority: Int
+    user: User!
 }

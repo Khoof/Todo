@@ -32,18 +32,16 @@ class CustomResolverMap extends ResolverMap
                     return match ($info->fieldName) {
                         'login'              => $this->authResolverService->handleLogin($args),
                         'register'           => $this->authResolverService->register($args),
-                        'createTodo'         => $this->todoMutationService->createTodo($this->currentUser(), $args),
-                        'updateTodo'         => $this->todoMutationService->updateTodo($this->currentUser(), $args),
+                        'createOrUpdateTodo'         => $this->todoMutationService->createOrUpdateTodo($this->currentUser(), $args),
                         'deleteTodo'         => $this->todoMutationService->deleteTodo($this->currentUser(), $args),
                         'toggleTodoComplete'=> $this->todoMutationService->toggleTodoComplete($this->currentUser(), $args),
                         default => null,
                     };
                 },
             ],
-
+            
             'Query' => [
                 self::RESOLVE_FIELD => function ($value, ArgumentInterface $args, ArrayObject $context, ResolveInfo $info) {
-                    // ← YEH LINE FIX KI HAI: $context pehle, $info baad mein
                     return match ($info->fieldName) {
                         'me'          => $this->authResolverService->getCurrentUser(),
                         'getTodos'    => $this->todoQueryService->getTodos($this->currentUser(), $args),

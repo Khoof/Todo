@@ -18,9 +18,12 @@ class TodoQueryService
     {
         if (isset($args['completed'])) {
             return $this->todoRepository->findByUserAndCompleted($user, $args['completed']);
-        }
+            }
 
-        return $this->todoRepository->findByUser($user);
+            return $this->todoRepository->findBy(
+            ['user' => $user], 
+            ['priority' => 'ASC', 'id' => 'DESC']   
+            );
     }
 
     public function getTodoById(User $user, ArgumentInterface $args): ?Todo
